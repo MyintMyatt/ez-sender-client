@@ -4,7 +4,7 @@
 
 ### Features
 - Auto-configured Spring Boot integration
-- gRPC client for communicating with the EzSender Service
+- gRPC client for communicating with the [EzSender Service](https://github.com/MyintMyatt/ez-sender)
 - REST client support
 - Configurable gRPC channel name
 
