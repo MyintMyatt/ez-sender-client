@@ -113,4 +113,14 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>Github</id>
+            <name>GitHub Packages</name>
+            <url>
+                https://maven.pkg.github.com/MyintMyatt/ez-sender-client
+            </url>
+        </repository>
+    </distributionManagement>
+
 </project>
