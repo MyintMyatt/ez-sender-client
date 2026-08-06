@@ -1,10 +1,9 @@
 package com.ezsender.client.configuration;
 
-import com.ezsender.client.NotificationClient;
-import com.ezsender.client.grpc.NotificationClientDefault;
+import com.ezsender.client.grpc.NotificationGrpcClient;
+import com.ezsender.client.grpc.NotificationGrpcClientDefault;
 import dev.orion.grpc.notification.NotificationServiceGrpc;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -14,14 +13,7 @@ import org.springframework.grpc.client.GrpcChannelFactory;
 @AutoConfiguration
 @EnableConfigurationProperties(EzSenderClientProperties.class)
 @ConditionalOnClass(GrpcChannelFactory.class)
-@ConditionalOnBean(GrpcChannelFactory.class)
 public class EzSenderClientAutoConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean
-    public NotificationClient notificationClient(NotificationServiceGrpc.NotificationServiceStub stub){
-        return new NotificationClientDefault(stub);
-    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -36,6 +28,12 @@ public class EzSenderClientAutoConfiguration {
                             + "'spring.grpc.client.channels." + properties.getChannel() + "'.",
                     ex);
         }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public NotificationGrpcClient notificationClient(NotificationServiceGrpc.NotificationServiceStub stub){
+        return new NotificationGrpcClientDefault(stub);
     }
 
 }
