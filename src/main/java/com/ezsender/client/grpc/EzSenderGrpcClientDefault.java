@@ -9,16 +9,16 @@ import io.grpc.stub.StreamObserver;
 
 import java.util.concurrent.CompletableFuture;
 
-public class NotificationGrpcClientDefault implements NotificationGrpcClient {
+public class EzSenderGrpcClientDefault implements EzSenderGrpcClient {
 
     private final NotificationServiceGrpc.NotificationServiceStub asyncStub;
 
-    public NotificationGrpcClientDefault(NotificationServiceGrpc.NotificationServiceStub asyncStub){
+    public EzSenderGrpcClientDefault(NotificationServiceGrpc.NotificationServiceStub asyncStub){
         this.asyncStub = asyncStub;
     }
 
     @Override
-    public NotificationCommonResponse sendOtp(OtpNotificationRequest request) {
+    public NotificationCommonResponse sendOtp(OtpMailRequest request) {
         var  result = new CompletableFuture<NotificationCommonResponse>();
         asyncStub.sendOtpMail(request, new StreamObserver<>() {
             @Override

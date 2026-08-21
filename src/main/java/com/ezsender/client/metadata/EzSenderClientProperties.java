@@ -1,4 +1,4 @@
-package com.ezsender.client.configuration;
+package com.ezsender.client.metadata;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
