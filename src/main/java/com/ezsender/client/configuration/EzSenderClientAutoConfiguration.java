@@ -4,12 +4,8 @@ import com.ezsender.client.grpc.EzSenderGrpcClient;
 import com.ezsender.client.grpc.EzSenderGrpcClientDefault;
 import com.ezsender.client.metadata.EzSenderClientProperties;
 import com.ezsender.client.metadata.EzSenderRabbitMqProperties;
-import com.ezsender.client.metadata.EzSenderRabbitMqQueueMetadata;
+import com.ezsender.client.metadata.EzSenderRabbitMqMetadata;
 import dev.orion.grpc.notification.NotificationServiceGrpc;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -22,20 +18,16 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.client.GrpcChannelFactory;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 @AutoConfiguration
 @EnableConfigurationProperties({
         EzSenderClientProperties.class,
         EzSenderRabbitMqProperties.class,
-        EzSenderRabbitMqQueueMetadata.class
 })
 @ConditionalOnClass(GrpcChannelFactory.class)
 public class EzSenderClientAutoConfiguration {
-
-    private final EzSenderRabbitMqQueueMetadata mqMetadata;
-
-    public EzSenderClientAutoConfiguration(EzSenderRabbitMqQueueMetadata queueMetadata) {
-        this.mqMetadata = queueMetadata;
-    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -62,54 +54,27 @@ public class EzSenderClientAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ConnectionFactory notificationConnectionFactory(EzSenderRabbitMqProperties properties){
-        var factory = new CachingConnectionFactory();
+        var factory = new com.rabbitmq.client.ConnectionFactory();
+        try{
+            factory.useSslProtocol();
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new RuntimeException(e);
+        }
+
         factory.setHost(properties.getHost());
         factory.setPort(properties.getPort());
         factory.setUsername(properties.getUsername());
         factory.setPassword(properties.getPassword());
         factory.setVirtualHost(properties.getVirtualHost());
+        factory.setAutomaticRecoveryEnabled(false);
 
-        return factory;
+        return new CachingConnectionFactory(factory);
     }
 
 
     @Bean
-    public TopicExchange notificationExchange(){
-        return new TopicExchange(mqMetadata.getExchange(), true, false);
-    }
-
-    @Bean
-    public Queue smsQueue() {
-        return new Queue(mqMetadata.getSmsQueue(), true);
-    }
-
-    @Bean
-    public Queue pushNotiQueue(){
-        return new Queue(mqMetadata.getPushQueue(), true);
-    }
-
-    @Bean
-    public Queue emailQueue() {
-        return new Queue(mqMetadata.getEmailQueue(), true);
-    }
-
-    @Bean
-    public Binding smsBinding(){
-        return BindingBuilder.bind(smsQueue()).to(notificationExchange()).with(mqMetadata.getSmsRoutingKey());
-    }
-
-    @Bean
-    public Binding emailBinding() {
-        return BindingBuilder.bind(emailQueue()).to(notificationExchange()).with(mqMetadata.getEmailRoutingKey());
-    }
-
-    @Bean
-    public Binding pushNotiBinding(){
-        return BindingBuilder.bind(pushNotiQueue()).to(notificationExchange()).with(mqMetadata.getPushRoutingKey());
-    }
-
-    @Bean
-    public MessageConverter rabbitMessageConverter(){
+    @ConditionalOnMissingBean
+    public MessageConverter messageConverter() {
         return new JacksonJsonMessageConverter();
     }
 

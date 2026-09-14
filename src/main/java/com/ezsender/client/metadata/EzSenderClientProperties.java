@@ -2,7 +2,7 @@ package com.ezsender.client.metadata;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "ez-sender.client")
+@ConfigurationProperties(prefix = "ez-sender.grpc.client")
 public class EzSenderClientProperties {
 
     ///
